@@ -100,3 +100,24 @@ def get_label_encoding(v1, train_df, test_df):
     v1_label_encoded_test_df = pd.DataFrame(v1_label_encoded_test, columns=['{}_LABEL_ENC'.format(v1)])
 
     return v1_label_encoded_train_df, v1_label_encoded_test_df
+
+
+def get_final_train_train(train_df, train_one_hot_enc, test_one_hot_enc, train_target_enc, test_target_enc,
+                          train_label_enc_v1,
+                          test_label_enc_v1):
+    train = pd.concat([train_one_hot_enc, train_target_enc], axis=1)
+    train = pd.concat([train, train_label_enc_v1], axis=1)
+    data = pd.concat([train, train_df[['TARGET']]], axis=1)
+    target = data[['TARGET']]
+    data = data.drop(['TARGET'], axis=1)
+
+    test = pd.concat([test_one_hot_enc, test_target_enc], axis=1)
+    test = pd.concat([test, test_label_enc_v1], axis=1)
+    return data, target, test
+
+
+def get_add_fe(train, test, add_train_fe, add_test_fe):
+    train = pd.concat([train, add_train_fe], axis=1)
+    test = pd.concat([test, add_test_fe], axis=1)
+
+    return train, test
