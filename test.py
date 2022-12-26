@@ -24,3 +24,12 @@ def get_metric_test_df(data, test, target, Best_trial):
         n += 1
 
     return rmse
+
+
+def gen_submission_df(try_num, preds):
+    # 제출 데이터 생성
+    submission_df = pd.read_csv('sample_submission.csv')
+    submission_df['운송장_건수'] = preds
+    # submission_df['운송장_건수'] = round(submission_df['운송장_건수'], 0)
+
+    submission_df.to_csv('submission_{}.csv'.format(try_num), index=False)
