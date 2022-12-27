@@ -294,5 +294,4 @@ def get_optuna_parameter_graph(study):
 
 def get_optuna_best_params(study):
     Best_trial = study.best_trial.params
-    Best_trial["n_estimators"], Best_trial["tree_method"] = 10000, 'gpu_hist'
     return Best_trial

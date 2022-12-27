@@ -1,13 +1,16 @@
 import numpy as np
 import pandas as pd
 import xgboost as xgb
+import lightgbm as lgb
+from catboost import CatBoostRegressor
+from pytorch_tabnet.tab_model import TabNetRegressor
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import KFold
 
 from preprocess import get_final_train_train, get_preprocess_all
 
 
-def get_metric_test_df(Best_trial):
+def get_metric_test_df(chosen_model, Best_trial):
     train_df, train_v1, test_v1, target_train_new, target_test_new, \
     v1_label_encoded_train_df_3, v1_label_encoded_test_df_3, \
     sgrid_label_encoded_train_df, sgrid_label_encoded_test_df, \
@@ -29,7 +32,14 @@ def get_metric_test_df(Best_trial):
     for trn_idx, test_idx in kf.split(train[columns], train['TARGET']):
         X_tr, X_val = train[columns].iloc[trn_idx], train[columns].iloc[test_idx]
         y_tr, y_val = train['TARGET'].iloc[trn_idx], train['TARGET'].iloc[test_idx]
-        model = xgb.XGBRegressor(**Best_trial)
+        if chosen_model == 'xgboost':
+            model = xgb.XGBRegressor(**Best_trial)
+        elif chosen_model == 'lightgbm':
+            model = lgb.LGBMRegressor(**Best_trial)
+        elif chosen_model == 'catboost':
+            model = CatBoostRegressor(**Best_trial)
+        else:
+            model = TabNetRegressor(**Best_trial)
         model.fit(X_tr, y_tr, eval_set=[(X_val, y_val)], early_stopping_rounds=100, verbose=False)
         preds += model.predict(test[columns]) / kf.n_splits
         rmse.append(mean_squared_error(y_val, model.predict(X_val), squared=False))
