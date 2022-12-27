@@ -5,6 +5,48 @@ from sklearn.model_selection import KFold
 from utils import *
 
 
+def get_preprocess_all():
+    # 데이터 가져오기
+    train_df, test_df = get_data()
+    # 변수명 변경
+    train_df, test_df = get_rename(train_df, test_df)
+    # ITEM 변수에 대한 원핫인코딩
+    train_v1, test_v1 = get_one_hot_encoding('ITEM', train_df, test_df)
+    # 'SGRID', 'CGRID', 'ITEM'에 대한 KFOLD-TARGET 인코딩 수행
+    train_df_copy = train_df[['SGRID', 'CGRID', 'ITEM', 'TARGET']]
+    test_df_copy = test_df[['SGRID', 'CGRID', 'ITEM']]
+    target_train_new, target_test_new = kfold_target_encoder(train_df_copy, test_df_copy, ['SGRID', 'CGRID', 'ITEM'],
+                                                             'TARGET', folds=10)
+    # SGRID에 대해 첫3자리 범위 확장 후 label 인코딩 수행
+    new_train_df = get_larger_range_final('SGRID', train_df, num=3, option='first')
+    new_test_df = get_larger_range_final('SGRID', test_df, num=3, option='first')
+    v1_label_encoded_train_df_3, v1_label_encoded_test_df_3 = get_label_encoding('SGRID_FIRST_3', new_train_df,
+                                                                                 new_test_df)
+    # SGRID에 대해 뒷5자리 범위 확장 후 label 인코딩 수행
+    new_train_df = get_larger_range_final('SGRID', train_df, num=5, option='last')
+    new_test_df = get_larger_range_final('SGRID', test_df, num=5, option='last')
+    sgrid_label_encoded_train_df, sgrid_label_encoded_test_df = get_label_encoding('SGRID_LAST_5', new_train_df,
+                                                                                   new_test_df)
+    # CGRID 대해 첫3자리 범위 확장 후 label 인코딩 수행
+    new_train_df_CGRID_3 = get_larger_range_final('CGRID', train_df, num=3, option='first')
+    new_test_df_CGRID_3 = get_larger_range_final('CGRID', test_df, num=3, option='first')
+    cgrid_label_encoded_train_df_3, cgrid_label_encoded_test_df_3 = get_label_encoding('CGRID_FIRST_3',
+                                                                                       new_train_df_CGRID_3,
+                                                                                       new_test_df_CGRID_3)
+    # CGRID 대해 뒷5자리 범위 확장 후 label 인코딩 수행
+    new_train_df_CGRID_5 = get_larger_range_final('CGRID', train_df, num=5, option='last')
+    new_test_df_CGRID_5 = get_larger_range_final('CGRID', test_df, num=5, option='last')
+    cgrid_label_encoded_train_df_5, cgrid_label_encoded_test_df_5 = get_label_encoding('CGRID_LAST_5',
+                                                                                       new_train_df_CGRID_5,
+                                                                                       new_test_df_CGRID_5)
+
+    return train_df, train_v1, test_v1, target_train_new, target_test_new, \
+           v1_label_encoded_train_df_3, v1_label_encoded_test_df_3, \
+           sgrid_label_encoded_train_df, sgrid_label_encoded_test_df, \
+           cgrid_label_encoded_train_df_3, cgrid_label_encoded_test_df_3, \
+           cgrid_label_encoded_train_df_5, cgrid_label_encoded_test_df_5
+
+
 def get_data():
     # 데이터 불러오기
     train_df = pd.read_csv('train.csv')

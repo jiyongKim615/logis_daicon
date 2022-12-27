@@ -4,8 +4,21 @@ import xgboost as xgb
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import KFold
 
+from preprocess import get_final_train_train, get_preprocess_all
 
-def get_metric_test_df(data, test, target, Best_trial):
+
+def get_metric_test_df(Best_trial):
+    train_df, train_v1, test_v1, target_train_new, target_test_new, \
+    v1_label_encoded_train_df_3, v1_label_encoded_test_df_3, \
+    sgrid_label_encoded_train_df, sgrid_label_encoded_test_df, \
+    cgrid_label_encoded_train_df_3, cgrid_label_encoded_test_df_3, \
+    cgrid_label_encoded_train_df_5, cgrid_label_encoded_test_df_5 = get_preprocess_all()
+
+    # 최종 데이터 도출
+    data, target, test = \
+        get_final_train_train(train_df, train_v1, test_v1, target_train_new, target_test_new,
+                              v1_label_encoded_train_df_3, v1_label_encoded_test_df_3)
+
     columns = data.columns.to_list()
     train = pd.concat([data, target], axis=1)
 
@@ -23,7 +36,7 @@ def get_metric_test_df(data, test, target, Best_trial):
         print(f"fold: {n + 1} ==> rmse: {rmse[n]}")
         n += 1
 
-    return rmse
+    return preds, rmse
 
 
 def gen_submission_df(try_num, preds):
